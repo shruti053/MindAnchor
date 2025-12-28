@@ -28,7 +28,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import com.google.android.gms.location.LocationServices
 import java.util.*
 
@@ -127,44 +126,70 @@ class MainActivity : ComponentActivity(), TextToSpeech.OnInitListener {
 
     private fun startSpeechRecognition() {
         val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+            putExtra(
+                RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
+            )
             putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
         }
         speechLauncher.launch(intent)
     }
 
-    // -------- VOICE LOGIC (FINAL) --------
+    // -------- VOICE LOGIC (SAFE & STABLE) --------
     private fun detectKeywords(text: String) {
-        when {
 
-            // 🧭 LOST → SEND SMS + MAPS
-            text.contains("lost") || text.contains("go home") -> {
-                sendLostSms()
-                openDirectionsToHome()
-            }
+        val spokenText = text.lowercase(Locale.getDefault())
 
-            // 🆘 HELP → CALL EMERGENCY CONTACT
-            text.contains("help") || text.contains("emergency") -> {
-                callEmergencyContact()
-            }
-
-            else -> {
-                tts.speak("I did not understand", TextToSpeech.QUEUE_FLUSH, null, null)
-            }
+        // 🧭 PRIORITY 1: LOST
+        if (
+            spokenText.contains("lost") ||
+            spokenText.contains("go home") ||
+            spokenText.contains("i am lost")
+        ) {
+            tts.speak(
+                "I will help you go home",
+                TextToSpeech.QUEUE_FLUSH,
+                null,
+                null
+            )
+            sendLostSms()
+            openDirectionsToHome()
+            return
         }
+
+        // 🆘 PRIORITY 2: HELP
+        if (
+            spokenText.contains("help") ||
+            spokenText.contains("emergency") ||
+            spokenText.contains("bachao")
+        ) {
+            tts.speak(
+                "Calling emergency contact",
+                TextToSpeech.QUEUE_FLUSH,
+                null,
+                null
+            )
+            callEmergencyContact()
+            return
+        }
+
+        // ❓ FALLBACK
+        tts.speak(
+            "I did not understand. Please say help or lost.",
+            TextToSpeech.QUEUE_FLUSH,
+            null,
+            null
+        )
     }
 
     // -------- ACTIONS --------
     private fun callEmergencyContact() {
         val number = prefs.getString("emergency_contact", null) ?: return
-
-        tts.speak("Calling emergency contact", TextToSpeech.QUEUE_FLUSH, null, null)
         startActivity(Intent(Intent.ACTION_DIAL, Uri.parse("tel:$number")))
     }
 
     private fun openDirectionsToHome() {
         val address = prefs.getString("home_address", null) ?: return
-
         val uri =
             Uri.parse("https://www.google.com/maps/dir/?api=1&destination=${Uri.encode(address)}")
         startActivity(Intent(Intent.ACTION_VIEW, uri))
@@ -183,7 +208,7 @@ class MainActivity : ComponentActivity(), TextToSpeech.OnInitListener {
         fusedLocationClient.lastLocation.addOnSuccessListener { loc: Location? ->
             loc?.let {
                 val message =
-                    "I am LOST. My current location is: https://maps.google.com/?q=${it.latitude},${it.longitude}"
+                    "I am LOST. My location: https://maps.google.com/?q=${it.latitude},${it.longitude}"
 
                 SmsManager.getDefault().sendTextMessage(
                     contact,
@@ -197,7 +222,7 @@ class MainActivity : ComponentActivity(), TextToSpeech.OnInitListener {
     }
 }
 
-// ---------------- UI ----------------
+/* ---------------- UI ---------------- */
 
 @Composable
 fun ProfileScreen(
@@ -218,6 +243,7 @@ fun ProfileScreen(
     GradientBg {
         Card(shape = RoundedCornerShape(24.dp)) {
             Column(Modifier.padding(20.dp)) {
+
                 Text(
                     if (isEdit) "Edit Profile" else "Setup Profile",
                     fontSize = 22.sp,
@@ -247,6 +273,7 @@ fun ProfileScreen(
 @Composable
 fun MainScreen(onMicClick: () -> Unit, onProfileClick: () -> Unit) {
     GradientBg {
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.End
