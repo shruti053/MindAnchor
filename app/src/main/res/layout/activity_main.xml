@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- SPLASH SCREEN -->
+    <RelativeLayout
+        android:id="@+id/splashLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#0A0A0A">
+
+        <ImageView
+            android:id="@+id/logoImage"
+            android:layout_width="160dp"
+            android:layout_height="160dp"
+            android:layout_centerInParent="true"
+            android:src="@drawable/mindanchor_logo"
+            android:scaleType="centerCrop"
+            android:contentDescription="App Logo"/>
+    </RelativeLayout>
+
+    <!-- MAIN CONTENT -->
+    <RelativeLayout
+        android:id="@+id/mainLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        android:background="#FFFFFF">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Home Screen"
+            android:textSize="22sp"
+            android:layout_centerInParent="true"/>
+    </RelativeLayout>
+
+</FrameLayout>
