@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">AlzheimerHelp</string>
+    <string name="start_voice_detection">Start Voice Detection</string>
+    <string name="voice_emergency_system">Voice Emergency System</string>
+</resources>
